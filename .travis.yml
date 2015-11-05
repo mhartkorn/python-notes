@@ -15,4 +15,4 @@ before_script:
   - sqlite3 notes/database.sqlite < notes/schema.sql
 
 script:
-  - notes/test_notes.py
+  - python notes/test_notes.py
