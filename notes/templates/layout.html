@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+	{% block head %}
+		<title>{% block title %}Notes{% endblock %}</title>
+
+		<meta name="content-type" content="text/html; charset=utf-8"/>
+
+		<link rel="stylesheet" href="/static/css/style.css" type="text/css" media="screen"/>
+	{% endblock %}
+</head>
+<body>
+<div class="header">
+	<div class="header_blogtitle">
+		<span class="blogtitle"><a href="/">Notes</a></span>
+		<br/>
+		<span class="blogdescription">Subtitle...</span>
+	</div>
+
+	<div class="header_navigation">
+		<ul>
+			{% block header_navi %}
+				<li><a href="/archive/{{ current_time.strftime('%Y/%m') }}">Month</a></li>
+			{% endblock %}
+		</ul>
+	</div>
+</div>
+<div class="maincontainer">
+	<div class="text">
+		{% block text %}
+
+		{% endblock %}
+	</div>
+</div>
+<div class="footer">
+	{% block footer %}
+		<div class="footer_navi">
+			<a href="/about">About me</a> | <a href="/imprint">Imprint</a>
+		</div>
+	{% endblock %}
+</div>
+
+</body>
+</html>

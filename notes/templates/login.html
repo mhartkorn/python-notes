@@ -1,0 +1,19 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN">
+<html>
+<head>
+	<title>Login</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+</head>
+<body>
+	<form method="POST" action="/login/submit" accept-charset="UTF-8">
+		{%  if status == 'failed' -%}
+			<span style="color: red; font-weight: bold;">Wrong username or password!</span><br /><br />
+		{%- endif %}
+		<label for="username">Name:</label>
+			<input type="text" id="username" name="username"/><br />
+		<label for="passwd">Passwort:</label>
+			<input type="password" id="passwd" name="passwd"/><br />
+		<input type="submit" name="submit" value="Login" />
+	</form>
+</body>
+</html>

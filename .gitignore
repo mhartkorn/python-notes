@@ -1,0 +1,19 @@
+.*
+!.gitignore
+
+# IntelliJ IDEA file
+*.iml
+.idea
+
+# Virtualenv
+venv
+
+# Compiled Python files
+*.pyc
+__*
+
+# Local stuff
+/notes/tests
+
+# Databases are local, use the schema.sql to create your own
+*.sqlite

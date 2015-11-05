@@ -1,0 +1,13 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN">
+<html>
+<head>
+	<title>Manage notes</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+</head>
+<body>
+{% if action == 'delete' %}
+	Are you sure you want to delete <a href="/note/{{ noteid }}">this note</a>?<br/><br/>
+	<a href="/note/{{ noteid }}/delete/confirm/{{ csrf_token }}">Yes</a> - <a href="/note/{{ noteid }}">No</a>
+{% endif %}
+</body>
+</html>

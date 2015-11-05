@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+
+{% block text %}
+	{% if notes == None -%}
+		<strong>Keine passenden Notizen gefunden.</strong>
+	{%- else %}
+		{% for day in notes -%}
+			<h3>{{ day[0].date }}</h3>
+			<ul>
+				{% for note in day -%}
+					<li>{{ note.text|safe }}<br/>
+						<strong>Tags:</strong>
+						{% if note.tags != None -%}
+							{% for tag in note.tags[:-1] -%}
+								<a href="/tag/{{ tag|lower|urlencode }}">{{ tag }}</a>,&nbsp;
+							{%- endfor -%}
+							<a href="/tag/{{ note.tags[-1]|lower|urlencode }}">{{ note.tags[-1] }}</a>
+						{%- else -%}
+							Keine Tags angegeben.
+						{%- endif %}
+						{% if 'loggedin' in session -%}
+							| <strong>Adminoptionen:</strong> <a href="/note/{{ note['noteid'] }}/delete">Löschen</a>,
+							<a href="/note/{{ note['noteid'] }}/edit">Bearbeiten</a>
+						{%- endif %}
+						| <a href="/note/{{ note['noteid'] }}">Permalink</a>
+					</li>
+				{%- endfor %}
+			</ul>
+		{%- endfor %}
+	{% endif %}
+{% endblock %}
