@@ -5,14 +5,15 @@ python:
   - "3.5"
   - "pypy"
 
+notifications:
+  email: false
+
 install:
   - pip install flask
 
-services:
-  - sqlite3
-
 before_script:
-  - sqlite3 notes/database.sqlite < notes/schema.sql
+  - cd notes
+  - sqlite3 ./database.sqlite < ./schema.sql
 
 script:
-  - python notes/test_notes.py
+  - python ./test_notes.py
