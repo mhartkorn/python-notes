@@ -8,6 +8,7 @@ How to install:
 
 - Install dependencies with `pip install flask`
 - Create SQLite database with `sqlite3 database.sqlite < schema.sql`
+- Change the `secret_key` in `notes.py`
 - Run `python3 notes.py`
 
 This starts a HTTP server on `http://localhost:5000`. To login, navigate to `http://localhost:5000/admin` and enter the predefined credentials (name: `admin`, password `admin`).

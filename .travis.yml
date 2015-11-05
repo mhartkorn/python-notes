@@ -1,0 +1,18 @@
+language: python
+
+python:
+  - "3.4"
+  - "3.5"
+  - "pypy"
+
+install:
+  - pip install flask
+
+services:
+  - sqlite3
+
+before_script:
+  - sqlite3 notes/database.sqlite < notes/schema.sql
+
+script:
+  - notes/test_notes.py

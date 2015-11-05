@@ -1,17 +1,16 @@
 #!/usr/bin/env python
 
 from flask import Flask, g, render_template, request, redirect, url_for, session, abort
-from werkzeug.security import check_password_hash
-
-from functions import query_db, is_admin, generate_csrf_token, check_csrf_token, subtract_lists
 
 import time
 import urllib
+import sqlite3 as sql
+from uuid import uuid4
 
-DATABASE = './database.sqlite'
 
 app = Flask('notes')
-app.secret_key = '6>PmD$~h|&/5f1\x04kH^eqn:YQG~c(EZiRP{=uKTFgDu9pz^>\x01D1'
+app.secret_key = 'secretKey'
+app.config['DATABASE'] = './database.sqlite'
 
 
 @app.route('/')
@@ -252,6 +251,61 @@ def about_page():
     return render_template('about.html')
 
 
+def is_admin():
+    return 'loggedin' in session
+
+
+def check_csrf_token(request_token):
+    token = session.pop('_csrf_token', None)
+    return token is not None and token == request_token
+
+
+def generate_csrf_token():
+    if '_csrf_token' not in session:
+        session['_csrf_token'] = str(uuid4()).split("-")[-1]
+    return session['_csrf_token']
+
+
+def get_db():
+    # SQL connection
+    if not hasattr(g, 'db_connection'):
+        g.db_connection = connect_db(app.config['DATABASE'], ["PRAGMA foreign_keys = ON"])
+        g.db_cursor = g.db_connection.cursor()
+
+    return g.db_cursor
+
+
+def query_db(query, args=(), one=False):
+    cursor = get_db()
+    cursor.execute(query, args)
+    rv = [dict((cursor.description[idx][0], value)
+               for idx, value in enumerate(row)) for row in cursor.fetchall()]
+    return (rv[0] if len(rv) > 0 else []) if one else rv
+
+
+# def connect_db(database, init_arguments=None):
+#    sql_connection = sql.connect(database='notes',
+#                                 user='notes',
+#                                 password='notes',
+#                                 host='/var/run/postgresql')
+#    if init_arguments is not None:
+#        for arg in init_arguments:
+#            sql_connection.execute(arg)
+#    return sql_connection
+
+def connect_db(database, init_arguments=None):
+    sql_connection = sql.connect(database)
+    if init_arguments is not None:
+        for arg in init_arguments:
+            sql_connection.execute(arg)
+    return sql_connection
+
+
+def subtract_lists(left, right):
+    s = set(right)
+    return [x for x in left if x not in s]
+
+
 @app.teardown_appcontext
 def teardown_appcontext(exception):
     if hasattr(g, 'db_connection'):
@@ -260,8 +314,6 @@ def teardown_appcontext(exception):
 
 @app.before_request
 def before_request():
-    g.database = DATABASE
-
     # Time object for template
     app.jinja_env.globals['current_time'] = time
 

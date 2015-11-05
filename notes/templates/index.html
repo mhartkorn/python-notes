@@ -2,7 +2,7 @@
 
 {% block text %}
 	{% if notes == None -%}
-		<strong>Keine passenden Notizen gefunden.</strong>
+		<strong>No notes found for this criteria.</strong>
 	{%- else %}
 		{% for day in notes -%}
 			<h3>{{ day[0].date }}</h3>
@@ -16,11 +16,11 @@
 							{%- endfor -%}
 							<a href="/tag/{{ note.tags[-1]|lower|urlencode }}">{{ note.tags[-1] }}</a>
 						{%- else -%}
-							Keine Tags angegeben.
+							No tags for this post.
 						{%- endif %}
 						{% if 'loggedin' in session -%}
-							| <strong>Adminoptionen:</strong> <a href="/note/{{ note['noteid'] }}/delete">Löschen</a>,
-							<a href="/note/{{ note['noteid'] }}/edit">Bearbeiten</a>
+							| <strong>Admin options:</strong> <a href="/note/{{ note['noteid'] }}/delete">Delete</a>,
+							<a href="/note/{{ note['noteid'] }}/edit">Edit</a>
 						{%- endif %}
 						| <a href="/note/{{ note['noteid'] }}">Permalink</a>
 					</li>

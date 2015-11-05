@@ -1,6 +1,9 @@
 .*
 !.gitignore
 
+# Continous Integration with travis-ci.org
+!.travis.yml
+
 # IntelliJ IDEA file
 *.iml
 .idea
