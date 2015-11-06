@@ -8,7 +8,7 @@ notifications:
   email: false
 
 install:
-  - pip install flask flask-testing coverage
+  - pip install flask flask-testing coverage coveralls
 
 before_script:
   - cd notes
