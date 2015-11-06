@@ -1,4 +1,4 @@
-import unittest
+import unittest, os
 
 from flask.ext.testing import TestCase
 
@@ -9,16 +9,19 @@ class NoTemplateRender(TestCase):
     render_templates = True
 
     def create_app(self):
-        notes.app.config['DATABASE'] = ':memory:'
+        notes.app.config['DATABASE'] = './test.sqlite'
         notes.app.config['TESTING'] = True
 
         return notes.app
 
     def setUp(self):
         # Import database schema and test data into SQLite
-        fp = open('./schema.sql', 'r')
-        sql = fp.read()
-        notes.get_db().executescript(sql)
+        with open('./schema.sql', 'r') as fp:
+            sql = fp.read()
+            notes.get_db().executescript(sql)
+
+    def tearDown(self):
+        os.remove(notes.app.config['DATABASE'])
 
     def test_index(self):
         rv = self.client.get('/')

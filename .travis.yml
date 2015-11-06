@@ -12,7 +12,6 @@ install:
 
 before_script:
   - cd notes
-  - sqlite3 ./database.sqlite < ./schema.sql
 
 after_success:
   - coveralls
