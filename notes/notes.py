@@ -9,7 +9,7 @@ from uuid import uuid4
 
 
 app = Flask('notes')
-app.secret_key = 'secretKey'
+app.config['SECRET_KEY'] = 'ReallyReallyLongUniqueSecretKey'
 app.config['DATABASE'] = './database.sqlite'
 
 
@@ -18,7 +18,8 @@ def index_page():
     query = query_db(
         "SELECT notes.noteid, notes.date, notes.text, GROUP_CONCAT(tags.name) AS tags FROM notes "
         "LEFT JOIN notetags ON (notetags.noteid=notes.noteid) LEFT JOIN tags ON (tags.tagid=notetags.tagid) "
-        "WHERE notes.date >= DATE((SELECT value FROM settings WHERE key='lastday')) GROUP BY notes.noteid "
+        # "WHERE notes.date >= DATE((SELECT value FROM settings WHERE key='lastday')) GROUP BY notes.noteid "
+        "GROUP BY notes.noteid "
         "ORDER BY notes.date DESC, notes.noteid DESC")
 
     return display(query)
@@ -80,7 +81,10 @@ def display(query):
         else:
             notes[-1].append(note)
 
-    return render_template('index.html', notes=notes)
+    if len(query) > 0:
+        return render_template('index.html', notes=notes)
+    else:
+        return render_template('index.html', notes=notes), 404
 
 
 @app.route('/note/<int:noteid>/<action>', defaults={'csrf_token': None})
@@ -120,7 +124,7 @@ def delete_note(noteid, action, csrf_token):
             elif action == 'edit':
                 return 'To be implemented...'
         else:
-            return abort(400)
+            return abort(401)
 
 
 @app.route('/login', defaults={'status': None})
@@ -256,7 +260,7 @@ def is_admin():
 
 
 def check_csrf_token(request_token):
-    token = session.pop('_csrf_token', None)
+    token = session.get('_csrf_token', None)
     return token is not None and token == request_token
 
 
@@ -320,4 +324,4 @@ def before_request():
 
 # Run it as standalone server
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)
