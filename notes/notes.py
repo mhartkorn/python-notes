@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 
-from flask import Flask, g, render_template, request, redirect, url_for, session, abort
-
+import sqlite3 as sql
 import time
 import urllib
-import sqlite3 as sql
 from uuid import uuid4
 
+from flask import Flask, g, render_template, request, redirect, url_for, session, abort
 
 app = Flask('notes')
 app.config['SECRET_KEY'] = 'ReallyReallyLongUniqueSecretKey'
@@ -30,8 +29,8 @@ def tag_page(tag):
     query = query_db(
         "SELECT notes.noteid, notes.date, notes.text, GROUP_CONCAT(tags.name) AS tags FROM notes "
         "LEFT JOIN notetags ON (notetags.noteid=notes.noteid) LEFT JOIN tags ON (tags.tagid=notetags.tagid) "
-        "WHERE notes.date >= DATE((SELECT value FROM settings WHERE key='lastday')) AND "
-        "notes.noteid IN (SELECT notetags.noteid FROM notetags "
+        # "WHERE notes.date >= DATE((SELECT value FROM settings WHERE key='lastday')) AND "
+        "WHERE notes.noteid IN (SELECT notetags.noteid FROM notetags "
         "WHERE notetags.tagid=(SELECT tagid FROM tags WHERE LOWER(name)=?)) "
         "GROUP BY notes.noteid ORDER BY notes.date DESC, notes.noteid DESC", [urllib.parse.unquote_plus(tag).lower()])
 
@@ -89,20 +88,21 @@ def display(query):
 
 @app.route('/note/<int:noteid>/<action>', defaults={'csrf_token': None})
 @app.route('/note/<int:noteid>/<action>/confirm/<csrf_token>')
-def delete_note(noteid, action, csrf_token):
+def delete_note_page(noteid, action, csrf_token):
     allowed_actions = ('edit', 'delete',)
 
     if csrf_token is None:
         if is_admin() and action in allowed_actions:
             # CSRF protection
-            csrf_token = generate_csrf_token()
+            csrf_token = get_csrf_token()
 
             if action == 'delete':
                 return render_template('manage-notes.html', action=action, noteid=noteid, csrf_token=csrf_token)
             elif action == 'edit':
                 query = query_db(
                     "SELECT notes.noteid, notes.date, notes.text, GROUP_CONCAT(tags.name, ',') AS tags FROM notes "
-                    "LEFT JOIN notetags ON (notetags.noteid=notes.noteid) LEFT JOIN tags ON (tags.tagid=notetags.tagid) "
+                    "LEFT JOIN notetags ON (notetags.noteid=notes.noteid) "
+                    "LEFT JOIN tags ON (tags.tagid=notetags.tagid) "
                     "WHERE notes.noteid=? GROUP BY notes.noteid", [noteid], one=True)
 
                 if query is None:
@@ -112,7 +112,7 @@ def delete_note(noteid, action, csrf_token):
 
                 return render_template('admin.html', note=query, csrf_token=csrf_token)
         else:
-            return abort(400)
+            return abort(401)
     else:
         if is_admin() and action in allowed_actions and check_csrf_token(csrf_token):
             if action == 'delete':
@@ -129,9 +129,9 @@ def delete_note(noteid, action, csrf_token):
 
 @app.route('/login', defaults={'status': None})
 @app.route('/login/<status>', methods=['GET', 'POST'])
-def login(status):
+def login_page(status):
     if is_admin():
-        return redirect(url_for('admin'))
+        return redirect(url_for('admin_page'))
 
     if status == 'submit':
         admin_credentials_result = query_db(
@@ -148,9 +148,9 @@ def login(status):
         # check_password_hash(admin_password, request.form['passwd']): # secure version
         if request.form['username'] == admin_username and admin_password == request.form['passwd']:
             session['loggedin'] = request.form['username']
-            return redirect(url_for('admin'))
+            return redirect(url_for('admin_page'))
         else:
-            return redirect(url_for('login', status='failed'))
+            return redirect(url_for('login_page', status='failed'))
     elif status == 'failed':
         return render_template('login.html', status='failed'), 401
     else:
@@ -158,33 +158,34 @@ def login(status):
 
 
 @app.route('/logout')
-def logout():
+def logout_page():
     session.clear()
 
     return redirect(url_for('index_page'))
 
 
 @app.route('/admin')
-def admin():
+def admin_page():
     if is_admin():
-        csrf_token = generate_csrf_token()
+        csrf_token = get_csrf_token()
         return render_template('admin.html', note=None, csrf_token=csrf_token)
     else:
-        return redirect(url_for('login'))
+        return redirect(url_for('login_page'))
 
 
 @app.route('/admin/<action>', methods=['POST'])
-def admin_action(action):
-    if check_csrf_token(request.form['csrf_token']) and \
-                    request.form['text'] is not None and request.form['tags'] is not None:
+def admin_action_page(action):
+    if is_admin() and check_csrf_token(request.form['csrf_token']) and \
+                    request.form['content'] is not None and request.form['tags'] is not None:
         if action == 'edit':
             if request.form['noteid'] is not None:
-                query_db("UPDATE notes SET text=? WHERE noteid=?", [request.form['text'], request.form['noteid']])
+                query_db("UPDATE notes SET text=? WHERE noteid=?", [request.form['content'], request.form['noteid']])
                 note_id = int(request.form['noteid'])
             else:
                 return abort(400)
         elif action == 'post':
-            query_db("INSERT INTO notes (date, text) VALUES (?, ?)", [time.strftime("%Y-%m-%d"), request.form['text']])
+            query_db("INSERT INTO notes (date, text) VALUES (?, ?)",
+                     [time.strftime("%Y-%m-%d"), request.form['content']])
 
             note_id = g.db_cursor.lastrowid
         else:
@@ -241,7 +242,9 @@ def admin_action(action):
 
         g.db_connection.commit()
 
-    return redirect(url_for('index_page'))
+        return redirect(url_for('index_page'))
+    else:
+        return render_template('login.html', status='failed'), 401
 
 
 # Static pages
@@ -264,7 +267,7 @@ def check_csrf_token(request_token):
     return token is not None and token == request_token
 
 
-def generate_csrf_token():
+def get_csrf_token():
     if '_csrf_token' not in session:
         session['_csrf_token'] = str(uuid4()).split("-")[-1]
     return session['_csrf_token']

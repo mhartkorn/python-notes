@@ -28,4 +28,4 @@ CREATE TABLE settings (
 
 INSERT INTO settings (key, value) VALUES ('admin_username', 'admin');
 INSERT INTO settings (key, value) VALUES ('admin_password', 'admin');
-INSERT INTO settings (key, value) VALUES ('last_day', DATE('now'));
+-- INSERT INTO settings (key, value) VALUES ('last_day', DATE('now'));

@@ -8,12 +8,14 @@ notifications:
   email: false
 
 install:
-  - pip install flask
-  - pip install flask-testing
+  - pip install flask flask-testing coverage
 
 before_script:
   - cd notes
   - sqlite3 ./database.sqlite < ./schema.sql
 
+after_success:
+  - coveralls
+
 script:
-  - python ./test_notes.py
+  - coverage run --source . test_notes.py

@@ -1,7 +1,7 @@
 {% if note == None -%}
 	<form action="/admin/post" method="post" accept-charset="utf-8">
 		Note:<br/>
-		<textarea style="width: 500px; height: 250px;" name="text"></textarea><br/><br/>
+		<textarea style="width: 500px; height: 250px;" name="content"></textarea><br/><br/>
 		Tags: <input type="text" name="tags" style="width: 400px;" value=""/><br/><br/>
 		<input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
 		<input type="submit" name="submit" value="Speichern"/>
@@ -9,7 +9,7 @@
 {%- else %}
 	<form action="/admin/edit" method="post" accept-charset="utf-8">
 		Note:<br/>
-		<textarea style="width: 500px; height: 250px;" name="text">{{ note['text'] }}</textarea><br/><br/>
+		<textarea style="width: 500px; height: 250px;" name="content">{{ note['content'] }}</textarea><br/><br/>
 		Tags: <input type="text" name="tags" style="width: 400px;" value="{{ note['tags'] }}"/><br/><br/>
 		<input type="hidden" name="noteid" value="{{ note['noteid'] }}"/>
 		<input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
