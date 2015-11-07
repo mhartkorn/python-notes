@@ -92,25 +92,28 @@ def delete_note_page(noteid, action, csrf_token):
     allowed_actions = ('edit', 'delete',)
 
     if csrf_token is None:
-        if is_admin() and action in allowed_actions:
-            # CSRF protection
-            csrf_token = get_csrf_token()
+        if is_admin():
+            if action in allowed_actions:
+                # CSRF protection
+                csrf_token = get_csrf_token()
 
-            if action == 'delete':
-                return render_template('manage-notes.html', action=action, noteid=noteid, csrf_token=csrf_token)
-            elif action == 'edit':
-                query = query_db(
-                    "SELECT notes.noteid, notes.date, notes.text, GROUP_CONCAT(tags.name, ',') AS tags FROM notes "
-                    "LEFT JOIN notetags ON (notetags.noteid=notes.noteid) "
-                    "LEFT JOIN tags ON (tags.tagid=notetags.tagid) "
-                    "WHERE notes.noteid=? GROUP BY notes.noteid", [noteid], one=True)
+                if action == 'delete':
+                    return render_template('manage-notes.html', action=action, noteid=noteid, csrf_token=csrf_token)
+                elif action == 'edit':
+                    query = query_db(
+                        "SELECT notes.noteid, notes.date, notes.text, GROUP_CONCAT(tags.name, ',') AS tags FROM notes "
+                        "LEFT JOIN notetags ON (notetags.noteid=notes.noteid) "
+                        "LEFT JOIN tags ON (tags.tagid=notetags.tagid) "
+                        "WHERE notes.noteid=? GROUP BY notes.noteid", [noteid], one=True)
 
-                if query is None:
-                    return render_template('error.html', type='note-not-found')
+                    if query is None or len(query) == 0:
+                        return render_template('error.html', type='note-not-found'), 404
 
-                query['tags'] = ', '.join(query['tags'].split(','))
+                    query['tags'] = ', '.join(query['tags'].split(','))
 
-                return render_template('admin.html', note=query, csrf_token=csrf_token)
+                    return render_template('admin.html', note=query, csrf_token=csrf_token)
+            else:
+                return abort(400)
         else:
             return abort(401)
     else:
@@ -121,8 +124,8 @@ def delete_note_page(noteid, action, csrf_token):
                 g.db_connection.commit()
 
                 return redirect(url_for('index_page'))
-            elif action == 'edit':
-                return 'To be implemented...'
+            else:
+                abort(400)
         else:
             return abort(401)
 
@@ -176,16 +179,16 @@ def admin_page():
 @app.route('/admin/<action>', methods=['POST'])
 def admin_action_page(action):
     if is_admin() and check_csrf_token(request.form['csrf_token']) and \
-                    request.form['content'] is not None and request.form['tags'] is not None:
+                    request.form['text'] is not None and request.form['tags'] is not None:
         if action == 'edit':
             if request.form['noteid'] is not None:
-                query_db("UPDATE notes SET text=? WHERE noteid=?", [request.form['content'], request.form['noteid']])
+                query_db("UPDATE notes SET text=? WHERE noteid=?", [request.form['text'], request.form['noteid']])
                 note_id = int(request.form['noteid'])
             else:
                 return abort(400)
         elif action == 'post':
             query_db("INSERT INTO notes (date, text) VALUES (?, ?)",
-                     [time.strftime("%Y-%m-%d"), request.form['content']])
+                     [time.strftime("%Y-%m-%d"), request.form['text']])
 
             note_id = g.db_cursor.lastrowid
         else:
