@@ -1,12 +1,17 @@
 # Notes
 
-Tiny blogging software in Python 3.3+ based on Flask. Very basic and fast, ideal to quickly type out toughts. Supports full HTML in all posts.
+Tiny blogging software in Python based on Flask. Very basic and fast, ideal to quickly type out toughts. Supports full HTML in all posts.
 
 Initially written to write down snippets about commandline arguments.
 
-How to install:
+### Requirements
 
-- Install dependencies with `pip install flask`
+- Python 3.3 or later
+- SQLite 3.7.11 or later
+
+### How to install
+
+- Install dependencies with `pip install flask` (use `pip -r requirements.txt` for using the unit tests)
 - Create SQLite database with `sqlite3 database.sqlite < schema.sql`
 - Change the value of `app.config['SECRET_KEY']` in `notes.py`
 - Run `python3 notes.py`
