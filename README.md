@@ -1,5 +1,8 @@
 # Notes
 
+[![Build Status](https://travis-ci.org/mhartkorn/python-notes.svg?branch=master)](https://travis-ci.org/mhartkorn/python-notes)
+[![Coverage Status](https://coveralls.io/repos/mhartkorn/python-notes/badge.svg?branch=master&service=github)](https://coveralls.io/github/mhartkorn/python-notes?branch=master)
+
 Tiny blogging software in Python based on Flask. Very basic and fast, ideal to quickly type out toughts. Supports full HTML in all posts.
 
 Initially written to write down snippets about commandline arguments.
