@@ -17,6 +17,7 @@ before_script:
 
 after_success:
   - coveralls
+  - codecov
 
 script:
   - coverage run --source . test_notes.py
